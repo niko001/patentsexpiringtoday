@@ -68,7 +68,8 @@
 					var dateTo = dateToday.getUTCFullYear() +"/"+ ("0" + (dateToday.getUTCMonth()+1)).slice(-2) +"/"+ ("0" + dateToday.getUTCDate()).slice(-2);
 									
 					//Build the query			
-					var queryUrl = 'http://www.patentsview.org/api/patents/query?q={"_and":[{"_gte":{"patent_date":"' + dateFrom + '"}},{"_lte":{"patent_date":"' + dateTo + '"}}]}&o={"page":1,"per_page":100}&s=[{"patent_date":"desc"}]&f=["patent_number", "patent_date", "patent_type", "patent_title", "patent_abstract"]';
+					//var queryUrl = 'http://www.patentsview.org/api/patents/query?q={"_and":[{"_gte":{"patent_date":"' + dateFrom + '"}},{"_lte":{"patent_date":"' + dateTo + '"}}]}&o={"page":1,"per_page":100}&s=[{"patent_date":"desc"}]&f=["patent_number", "patent_date", "patent_type", "patent_title", "patent_abstract"]';
+					var queryUrl = 'data/data_03012016.json'; //Use a locally cached data source for today
 			    $.getJSON(queryUrl, function (data) {
 			      //console.log(data);
 						
@@ -88,7 +89,7 @@
 								var patent_expiry_str = patent_expiry.getUTCFullYear() +"/"+ ("0" + (patent_expiry.getUTCMonth()+1)).slice(-2) +"/"+ ("0" + patent_expiry.getUTCDate()).slice(-2);
 								var patent_type = item.patent_type;
 								if ((typeof(item.patent_title) !== 'undefined') && (item.patent_title !== null)) {
-									var patent_title = item.patent_title.trunc(80);
+									var patent_title = "<a href='https://patents.google.com/patent/US" + item.patent_number + "' target='_blank'>" + item.patent_title.trunc(80) + "</a>";
 								}
 								if ((typeof(item.patent_abstract) !== 'undefined') && (item.patent_abstract !== null)) {
 									var patent_abstract = "<span title='" + item.patent_abstract + "'>" + item.patent_abstract.trunc(100) + "</span>";
@@ -100,14 +101,14 @@
 							loadingData.hide();
 							
 							//Display the data in the table
-				      $('#results_table').DataTable( {
+				      oTable = $('#results_table').DataTable( {
 				        "data": items,
 				         "columns": [
 								    { className: "padded_column" },
 								    { className: "padded_column" },
 								    { "visible": false },
 								    { className: "bold_column padded_column" },
-								    null
+								    { className: "hidden-xs padded_column" }
 								  ]			        
 				    	});
 
@@ -133,7 +134,8 @@
 						$(this).removeClass("link-black").addClass("link-black");
 						$("#sortby_id").removeClass("link-black");
 					}));	
-									
+					
+				
 					//Email signup
 					$("#btn-email-signup").on('click', function (){
 						$("#signup-form").submit();
@@ -294,7 +296,7 @@
 
                   <!-- form get alert -->
                   <div class="get_alert">
-                    <h4>Get a daily digest of <span class=" ">expiring patents</span></h4>
+                    <h4>Get a weekly digest of <span class=" ">expiring patents</span></h4>
                     <form id="signup-form">
                       <div class="row">
                         <div class="col-md-9">

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" >
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>PatentsExpiringToday.com - Find patents that expired today</title>
+
+    <!--favicon-->
+    <link rel="apple-touch-icon" href="assets/theme/images/apple-touch-icon.png">
+    <link rel="shortcut icon" href="assets/theme/images/favicon.ico" type="image/x-icon">
+
+    <!-- bootstrap -->
+    <link href="assets/plugins/bootstrap-3.3.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="assets/plugins/font-awesome-4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- lightbox -->
+    <link href="assets/plugins/magnific-popup/magnific-popup.css" rel="stylesheet">
+
+
+    <!-- Themes styles-->
+    <link href="assets/theme/css/theme.css" rel="stylesheet">  
+    <!-- Your custom css -->
+    <link href="assets/theme/css/theme-custom.css" rel="stylesheet">
+
+
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css"/>
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.2.4/css/buttons.bootstrap.min.css"/>
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.1.0/css/responsive.bootstrap.min.css"/>
+		 
+		<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+		<script type="text/javascript" src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/pdfmake.min.js"></script>
+		<script type="text/javascript" src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/vfs_fonts.js"></script>
+		<script type="text/javascript" src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
+		<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.4/js/dataTables.buttons.min.js"></script>
+		<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.bootstrap.min.js"></script>
+		<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.colVis.min.js"></script>
+		<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.html5.min.js"></script>
+		<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.1.0/js/dataTables.responsive.min.js"></script>
+		<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.1.0/js/responsive.bootstrap.min.js"></script>
+		<!-- DataTables designed and created by SpryMedia Ltd © 2007-2016. MIT licensed. Our Supporters -->
+		
+		<script>
+			$(document).ready(function() {
+				
+					//Ellipsize function
+					String.prototype.trunc = function(n){
+          	return this.substr(0,n-1)+(this.length>n?'&hellip;':'');
+      		};
+					
+					var loadingData = $('#loading_data');
+			
+					//Get today's date and -30 days as boundaries for the query
+					var dateToday = new Date();
+					var dateMinusOneMonth = new Date();
+					dateMinusOneMonth.setMonth(dateToday.getMonth() - 1);
+					//Substract 20 years
+					dateToday.setFullYear(dateToday.getFullYear() - 20);
+					dateMinusOneMonth.setFullYear(dateMinusOneMonth.getFullYear() - 20);
+					//Format as query parameters
+					var dateFrom = dateMinusOneMonth.getUTCFullYear() +"/"+ ("0" + (dateMinusOneMonth.getUTCMonth()+1)).slice(-2) +"/"+ ("0" + dateMinusOneMonth.getUTCDate()).slice(-2);
+					var dateTo = dateToday.getUTCFullYear() +"/"+ ("0" + (dateToday.getUTCMonth()+1)).slice(-2) +"/"+ ("0" + dateToday.getUTCDate()).slice(-2);
+									
+					//Build the query			
+					var queryUrl = 'http://www.patentsview.org/api/patents/query?q={"_and":[{"_gte":{"patent_date":"' + dateFrom + '"}},{"_lte":{"patent_date":"' + dateTo + '"}}]}&o={"page":1,"per_page":100}&s=[{"patent_date":"desc"}]&f=["patent_number", "patent_date", "patent_type", "patent_title", "patent_abstract"]';
+			    $.getJSON(queryUrl, function (data) {
+			      //console.log(data);
+						
+						//Get the number of results (stored in the "count" key of the returned JSON)
+						var itemCount = data["count"];
+						//console.log("Item count: " + itemCount);
+						
+						if(itemCount > 0){
+							//Get the "patents"-object from the returned JSON
+							var patents = data["patents"];
+							
+							var items = patents.map( function( item ){ 
+								var patent_id = "<a href='https://patents.google.com/patent/US" + item.patent_number + "' target='_blank'>" + item.patent_number + "</a>";
+								var patent_date = item.patent_date;
+								var patent_expiry = new Date(patent_date);
+								patent_expiry.setFullYear(patent_expiry.getFullYear() + 20);
+								var patent_expiry_str = patent_expiry.getUTCFullYear() +"/"+ ("0" + (patent_expiry.getUTCMonth()+1)).slice(-2) +"/"+ ("0" + patent_expiry.getUTCDate()).slice(-2);
+								var patent_type = item.patent_type;
+								if ((typeof(item.patent_title) !== 'undefined') && (item.patent_title !== null)) {
+									var patent_title = item.patent_title.trunc(80);
+								}
+								if ((typeof(item.patent_abstract) !== 'undefined') && (item.patent_abstract !== null)) {
+									var patent_abstract = "<span title='" + item.patent_abstract + "'>" + item.patent_abstract.trunc(100) + "</span>";
+								}
+	              return [patent_id, patent_expiry_str, patent_type, patent_title, patent_abstract]; 
+              });
+
+							
+							loadingData.hide();
+							
+							//Display the data in the table
+				      $('#results_table').DataTable( {
+				        "data": items,
+				         "columns": [
+								    { className: "padded_column" },
+								    { className: "padded_column" },
+								    { "visible": false },
+								    { className: "bold_column padded_column" },
+								    null
+								  ]			        
+				    	});
+
+						} else {
+							loadingData.html("No results for this time period");
+						}
+			    	
+			    });
+
+					//Button actions
+					$(".filter-type-btn").on('click',(function(e) {
+						var filterString = $(this).data('filter');
+						$('#results_table').DataTable().column( [2, 1] ).search( filterString ).draw();
+					}));
+					
+					$("#sortby_id").on('click',(function(e) {
+						$('#results_table').DataTable().column( [0, 1] ).order( 'desc' ).draw();
+						$(this).removeClass("link-black").addClass("link-black");
+						$("#sortby_title").removeClass("link-black");
+					}));
+					$("#sortby_title").on('click',(function(e) {
+						$('#results_table').DataTable().column( [3, 1] ).order( 'asc' ).draw();
+						$(this).removeClass("link-black").addClass("link-black");
+						$("#sortby_id").removeClass("link-black");
+					}));	
+									
+					//Email signup
+					$("#btn-email-signup").on('click', function (){
+						$("#signup-form").submit();
+					});
+					$('#signup-form').on('submit',(function(e) {
+						e.preventDefault();
+						$.ajax({
+							url: "http://www.greatbytes.org/patents/email_signup.php",
+							type: "POST",
+							data: new FormData(this),
+							contentType: false,
+							cache: false,
+							processData: false,
+							success: function(data){
+								console.log(data);	
+								var json_obj = $.parseJSON(data);
+								
+								var result = json_obj.result;
+								console.log(result);
+								
+								if(result == "ok"){
+									$('#show-signup-ok').click();
+								}
+			
+							}
+						});
+					}));
+    			
+		
+			} );
+		</script>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>  
+  <body>
+    <!-- wrapper page -->
+    <div class="wrapper">
+      <!-- main-header -->
+      <header class="main-header">
+
+
+        <!-- main navbar -->
+        <nav class="navbar navbar-default main-navbar hidden-sm hidden-xs">
+          <div class="container">
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+              <ul class="nav navbar-nav">
+                <li class="active"><a href="index.html"><strong>Explore Patents</strong></a></li>
+							</ul>
+            </div>
+          </div>
+        </nav><!-- end main navbar -->
+
+        <!-- mobile navbar -->
+        <div class="container">
+          <nav class="mobile-nav hidden-md hidden-lg">
+            <a href="#" class="btn-nav-toogle first">
+              <span class="bars"></span>
+              Menu
+            </a>
+            <div class="mobile-nav-block">
+              <h4>Navigation</h4>
+              <a href="#" class="btn-nav-toogle">
+                <span class="barsclose"></span>
+                Close
+              </a>      
+
+              <ul class="nav navbar-nav">
+                <li class="active"><a href="index.html"><strong>Explore Patents</strong></a></li>
+              </ul>    
+            </div>
+          </nav>
+        </div><!-- mobile navbar -->
+
+
+        <!-- form search area-->
+        <div class="container">
+          <div class="row">
+
+            <div class="col-md-4">
+              <!-- logo -->
+              <div class="logo text-center-sm"> <a href="index.html"><img src="assets/theme/images/logo.png" alt=""></a></div>
+            </div>
+
+            <div class="col-md-8">
+              <!-- form search -->
+              <form class="form-search-list" style="text-align: right;">
+                <div class="row">
+                  <div class="col-sm-5 col-sm-offset-7 col-xs-12 ">
+                    <div class="form-group">
+                      <label class="color-white" >Over 80% of patents are never commercially exploited - explore ideas whose patent protection expires today</label>
+                    </div>
+                  </div>
+                </div>
+              </form>  <!-- form search -->
+            </div>
+
+
+          </div>
+
+        </div><!-- end form search area-->
+
+      </header><!-- end main-header -->
+
+
+      <!-- body-content -->
+      <div class="body-content clearfix" >
+
+        <div class="bg-color2">
+          <div class="container">
+            <div class="row">
+              <div class="col-md-9">
+
+                <!-- box listing -->
+                <div class="block-section-sm box-list-area">
+
+                  <!-- desc top -->
+                  <div class="row hidden-xs">
+                    <div class="col-sm-6  ">
+                      <p><strong class="color-black">Patents expiring today (or recently expired)</strong></p>
+                    </div>
+                    <div class="col-sm-6">
+                      <p class="text-right">
+                        <!-- Jobs 1 to 10 of 578 -->
+                      </p>
+                    </div>
+                  </div><!-- end desc top -->
+
+                  <!-- item list -->  
+                  <div class="box-list">
+                    <div class="item">
+                      <div class="row">
+	                      	
+												<table id="results_table" class="display" cellspacing="0" width="100%">
+									        <thead>
+									            <tr>
+									                <th>ID</th>
+									                <th>Expiry</th>
+									                <th>Type</th>
+									                <th>Title</th>
+									                <th>Abstract</th>
+									            </tr>
+									        </thead>
+										    </table>
+										    
+										    <br>
+										    
+										    <div id="loading_data">Loading, please wait...</div>
+			
+											</div>
+										</div>
+                  </div>
+
+
+                  <!-- form get alert -->
+                  <div class="get_alert">
+                    <h4>Get a daily digest of <span class=" ">expiring patents</span></h4>
+                    <form id="signup-form">
+                      <div class="row">
+                        <div class="col-md-9">
+                          <div class="form-group">
+                            <label>My Email</label>
+                            <input name="email" type="email" class="form-control" placeholder="Enter Email">
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label class="hidden-sm hidden-xs ">&nbsp;</label>
+                            <button id="btn-email-signup" type="button" class="btn btn-theme btn-success btn-block">Activate</button>
+                          </div>
+                        </div>
+                      </div>
+                      <small>You can cancel email alerts at any time.</small>
+                    </form>
+                  </div><!-- end form get alert -->
+
+                </div><!-- end box listing -->
+
+
+              </div>
+              <div class="col-md-3">
+                <div class="block-section-sm side-right">
+                  <div class="row">
+                    <div class="col-xs-6">
+                      <p><strong>Sort by: </strong></p>
+                    </div>
+                    <div class="col-xs-6">
+                      <p class="text-right">
+                        <a id="sortby_id" href="#"><strong>ID</strong></a> - <a id="sortby_title" href="#" class="link-black"><strong>Title</strong></a>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="result-filter">
+                    <h5 class="no-margin-top font-bold margin-b-20 " ><a href="#s_collapse_1" data-toggle="collapse" >Filter by type <i class="fa ic-arrow-toogle fa-angle-right pull-right"></i> </a></h5>
+                    <div class="collapse in" id="s_collapse_1">
+                      <div class="list-area">
+                        <ul class="list-unstyled">
+                          <li>
+                            <a id="filter_utility" class="filter-type-btn" data-filter="utility" href="#" >Utility</a> <!-- (3333) -->
+                          </li>
+                          <li>
+                            <a id="filter_design" class="filter-type-btn" data-filter="design" href="#" >Design</a>
+                          </li>
+                          <li>
+                            <a id="filter_plant" class="filter-type-btn" data-filter="plant" href="#" >Plant</a>
+                          </li>
+                          <li>
+                            <a id="filter_none" class="filter-type-btn" data-filter="" href="#" >(Show all)</a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+
+                  </div>
+                </div>
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- modal signup-ok -->
+        <a id="show-signup-ok" href="#signup-ok" data-toggle="modal"></a>
+        <div class="modal fade" id="signup-ok">
+          <div class="modal-dialog modal-md">
+            <div class="modal-content">
+
+              <div class="modal-header text-center">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Thanks, you've signed up successfully</h4>
+              </div>
+              <div class="modal-footer text-center">
+                <a href="#" class="btn btn-success btn-theme" data-dismiss="modal">OK</a>
+              </div>
+
+            </div>
+          </div>
+        </div><!-- end modal signup-ok -->
+        
+    
+      </div><!--end body-content -->
+
+
+      <!-- main-footer -->
+      <footer class="main-footer">
+
+
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-6">
+              <ul class="list-inline link-footer text-center-xs">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="http://www.greatbytes.org/impressum" target="_blank">Imprint</a></li>
+              </ul>
+            </div>
+            <div class="col-sm-6 ">
+              <p class="text-center-xs hidden-lg hidden-md hidden-sm">Stay Connect</p>
+              <div class="socials text-right text-center-xs">
+                <a href="https://twitter.com/great_bytes" target="_blank"><i class="fa fa-twitter"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer><!-- end main-footer -->
+
+    </div><!-- end wrapper page -->
+
+
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="assets/plugins/jquery.easing-1.3.pack.js"></script>
+    <!-- Lightbox -->
+    <script src="assets/plugins/magnific-popup/jquery.magnific-popup.min.js"></script>
+    <!-- Theme JS -->
+    <script src="assets/theme/js/theme.js"></script>
+
+  </body>
+</html>

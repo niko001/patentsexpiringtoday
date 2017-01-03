@@ -1,0 +1,28 @@
+.pagination > .active > a, .pagination > .active > a:focus, .pagination > .active > a:hover, .pagination > .active > span, .pagination > .active > span:focus, .pagination > .active > span:hover {
+    background-color: #34495e;
+    border-color: #34495e;
+}
+
+.pagination > li > a, .pagination > li > span {
+	color: #868585;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+	margin-top: 30px !important;
+}
+.dataTables_info {
+	margin-top: 30px;
+}
+
+.bold_column {
+	font-weight: bold;
+}
+
+.padded_column {
+	padding-right: 15px;
+	vertical-align: top;
+}
+
+.table > tbody > tr > td {
+	vertical-align: top;
+}

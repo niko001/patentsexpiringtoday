@@ -66,10 +66,10 @@
 					//Format as query parameters
 					var dateFrom = dateMinusOneMonth.getUTCFullYear() +"/"+ ("0" + (dateMinusOneMonth.getUTCMonth()+1)).slice(-2) +"/"+ ("0" + dateMinusOneMonth.getUTCDate()).slice(-2);
 					var dateTo = dateToday.getUTCFullYear() +"/"+ ("0" + (dateToday.getUTCMonth()+1)).slice(-2) +"/"+ ("0" + dateToday.getUTCDate()).slice(-2);
-									
+
 					//Build the query			
-					//var queryUrl = 'http://www.patentsview.org/api/patents/query?q={"_and":[{"_gte":{"patent_date":"' + dateFrom + '"}},{"_lte":{"patent_date":"' + dateTo + '"}}]}&o={"page":1,"per_page":100}&s=[{"patent_date":"desc"}]&f=["patent_number", "patent_date", "patent_type", "patent_title", "patent_abstract"]';
-					var queryUrl = 'data/data_03012016.json'; //Use a locally cached data source for today
+					var queryUrl = 'http://www.patentsview.org/api/patents/query?q={"_and":[{"_gte":{"patent_date":"' + dateFrom + '"}},{"_lte":{"patent_date":"' + dateTo + '"}}]}&o={"page":1,"per_page":100}&s=[{"patent_date":"desc"}]&f=["patent_number", "patent_date", "patent_type", "patent_title", "patent_abstract"]';
+					//var queryUrl = 'data/data_03012016.json'; //Use a locally cached data source for today
 			    $.getJSON(queryUrl, function (data) {
 			      //console.log(data);
 						
@@ -426,7 +426,7 @@
               </ul>
             </div>
             <div class="col-sm-6 ">
-              <p class="text-center-xs hidden-lg hidden-md hidden-sm">Stay Connect</p>
+              <p class="text-center-xs hidden-lg hidden-md hidden-sm">Stay connected</p>
               <div class="socials text-right text-center-xs">
                 <a href="https://twitter.com/great_bytes" target="_blank"><i class="fa fa-twitter"></i></a>
               </div>

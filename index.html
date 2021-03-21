@@ -42,7 +42,7 @@
 		<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.html5.min.js"></script>
 		<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.1.0/js/dataTables.responsive.min.js"></script>
 		<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.1.0/js/responsive.bootstrap.min.js"></script>
-		<!-- DataTables designed and created by SpryMedia Ltd © 2007-2016. MIT licensed. Our Supporters -->
+		<!-- DataTables designed and created by SpryMedia Ltd Â© 2007-2016. MIT licensed. Our Supporters -->
 		
 		<script>
 			$(document).ready(function() {
@@ -66,7 +66,7 @@
 					var dateTo = dateToday.getUTCFullYear() +"/"+ ("0" + (dateToday.getUTCMonth()+1)).slice(-2) +"/"+ ("0" + dateToday.getUTCDate()).slice(-2);
 
 					//Build the query			
-					var queryUrl = 'http://www.patentsview.org/api/patents/query?q={"_and":[{"_gte":{"patent_date":"' + dateFrom + '"}},{"_lte":{"patent_date":"' + dateTo + '"}}]}&o={"page":1,"per_page":100}&s=[{"patent_date":"desc"}]&f=["patent_number", "patent_date", "patent_type", "patent_title", "patent_abstract"]';
+					var queryUrl = 'https://api.patentsview.org/patents/query?q={"_and":[{"_gte":{"patent_date":"' + dateFrom + '"}},{"_lte":{"patent_date":"' + dateTo + '"}}]}&o={"page":1,"per_page":100}&s=[{"patent_date":"desc"}]&f=["patent_number", "patent_date", "patent_type", "patent_title", "patent_abstract"]';
 					//var queryUrl = 'data/data_03012016.json'; //Use a locally cached data source for today
 			    $.getJSON(queryUrl, function (data) {
 			      //console.log(data);
